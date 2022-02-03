@@ -1,4 +1,6 @@
-ESX = nil
+local QBCore = exports['qb-core']:GetCoreObject()
+local PlayerData                = {}
+local playerUpdate			    = false
 local Program = 0
 local scaleform = nil
 local lives = 5
@@ -23,7 +25,7 @@ UTK = {
     hacksuccess = false,
     hackfail = false,
     hackres = false,
-    showtime = 60,
+    showtime = 12,
     currenthack,
     planted1,
     planted2,
@@ -232,7 +234,7 @@ UTK = {
         {a = nil, x= 1715.93, y= 2565.70, z= 55.44, h = 214.50, m = 0x2EFEAFD5, r = 1, w = "weapon_smg"},
         {a = nil, x= 1721.84, y= 2563.32, z= 55.44, h = 154.27, m = 0x2EFEAFD5, r = 1, w = "weapon_smg"},
         {a = nil, x= 1751.48, y= 2595.23, z= 55.44, h = 1.83, m = 0x2EFEAFD5, r = 1, w = "weapon_smg"},
-        --[[{a = nil, x= 2677.87, y= 1593.11, z= 32.51, h = 263.42, m = 0x2EFEAFD5, r = 1, w = "weapon_smg"},
+        {a = nil, x= 2677.87, y= 1593.11, z= 32.51, h = 263.42, m = 0x2EFEAFD5, r = 1, w = "weapon_smg"},
         {a = nil, x= 2677.87, y= 1593.11, z= 32.51, h = 263.42, m = 0x2EFEAFD5, r = 1, w = "weapon_smg"},
         {a = nil, x= 2677.87, y= 1593.11, z= 32.51, h = 263.42, m = 0x2EFEAFD5, r = 1, w = "weapon_smg"},
         {a = nil, x= 2677.87, y= 1593.11, z= 32.51, h = 263.42, m = 0x2EFEAFD5, r = 1, w = "weapon_smg"},
@@ -245,15 +247,18 @@ UTK = {
 }
 
 Citizen.CreateThread(function()
-	while ESX == nil do
-		TriggerEvent('esx:getSharedObject', function(obj) ESX = obj end)
+    if playerUpdate == false then
+        PlayerData = QBCore.Functions.GetPlayerData()
+		playerUpdate = true
+    end
+end)
+
+Citizen.CreateThread(function()
+	while not playerUpdate do
 		Citizen.Wait(1)
     end
-    while ESX.GetPlayerData().job == nil do
-		Citizen.Wait(10)
-	end
 
-    PlayerData = ESX.GetPlayerData()
+
     TriggerServerEvent("utk_pb:checkblackout")
     AddRelationshipGroup("guards")
     AddRelationshipGroup("police")
@@ -264,7 +269,7 @@ Citizen.CreateThread(function()
 end)
 
 function UTK:GetStage(...)
-    ESX.TriggerServerCallback("utk_pb:GetData", function(output)
+    QBCore.Functions.TriggerCallback('utk_pb:GetData', function(output)
         self.info = output
         return self:HandleInfo()
     end)
@@ -317,14 +322,14 @@ function UTK:HandleInfo(...)
                                 DrawText3D(self.locations.loud.bomb1.x, self.locations.loud.bomb1.y, self.locations.loud.bomb1.z, self.texts.loud.backup, 0.40)
                                 DrawMarker(1, self.locations.loud.bomb1.x, self.locations.loud.bomb1.y, self.locations.loud.bomb1.z - 1, 0, 0, 0, 0, 0, 0, 0.8, 0.8, 0.8, 236, 80, 80, 155, false, false, 2, false, 0, 0, 0, 0)
                                 if bomb1 <= 1.5 and IsControlJustReleased(0, 38) then
-                                    ESX.TriggerServerCallback("utk_pb:checkItem", function(cb)
+                                    QBCore.Functions.TriggerCallback("utk_pb:checkItem", function(cb)
                                         if cb then
                                             UTK.planted1 = true
                                             self.currentplant = 1
                                             TriggerServerEvent("utk_pb:removeItem", "normal_c4")
                                             self:PlantBomb()
                                         elseif not cb then
-                                            exports['mythic_notify']:SendAlert("error", "You don't have C4 charge.")
+                                            QBCore.Functions.Notify("You don't have C4 charge.", "error")
                                         end
                                     end, "normal_c4")
                                 end
@@ -337,14 +342,14 @@ function UTK:HandleInfo(...)
                                 DrawText3D(self.locations.loud.bomb2.x, self.locations.loud.bomb2.y, self.locations.loud.bomb2.z, self.texts.loud.backup, 0.40)
                                 DrawMarker(1, self.locations.loud.bomb2.x, self.locations.loud.bomb2.y, self.locations.loud.bomb2.z - 1, 0, 0, 0, 0, 0, 0, 0.8, 0.8, 0.8, 236, 80, 80, 155, false, false, 2, false, 0, 0, 0, 0)
                                 if bomb2 <= 1.5 and IsControlJustReleased(0, 38) then
-                                    ESX.TriggerServerCallback("utk_pb:checkItem", function(cb)
+                                    QBCore.Functions.TriggerCallback("utk_pb:checkItem", function(cb)
                                         if cb then
                                             UTK.planted2 = true
                                             self.currentplant = 2
                                             TriggerServerEvent("utk_pb:removeItem", "normal_c4")
                                             self:PlantBomb()
                                         elseif not cb then
-                                            exports['mythic_notify']:SendAlert("error", "You don't have C4 charge.")
+                                            QBCore.Functions.Notify("You don't have C4 charge.", "error")
                                         end
                                     end, "normal_c4")
                                 end
@@ -357,14 +362,14 @@ function UTK:HandleInfo(...)
                                 DrawText3D(self.locations.loud.bomb3.x, self.locations.loud.bomb3.y, self.locations.loud.bomb3.z, self.texts.loud.backup, 0.40)
                                 DrawMarker(1, self.locations.loud.bomb3.x, self.locations.loud.bomb3.y, self.locations.loud.bomb3.z - 1, 0, 0, 0, 0, 0, 0, 0.8, 0.8, 0.8, 236, 80, 80, 155, false, false, 2, false, 0, 0, 0, 0)
                                 if bomb3 <= 1.5 and IsControlJustReleased(0, 38) then
-                                    ESX.TriggerServerCallback("utk_pb:checkItem", function(cb)
+                                    QBCore.Functions.TriggerCallback("utk_pb:checkItem", function(cb)
                                         if cb then
                                             UTK.planted3 = true
                                             self.currentplant = 3
                                             TriggerServerEvent("utk_pb:removeItem", "normal_c4")
                                             self:PlantBomb()
                                         elseif not cb then
-                                            exports['mythic_notify']:SendAlert("error", "You don't have C4 charge.")
+                                            QBCore.Functions.Notify("You don't have C4 charge.", "error")
                                         end
                                     end, "normal_c4")
                                 end
@@ -377,14 +382,14 @@ function UTK:HandleInfo(...)
                                 DrawText3D(self.locations.loud.bomb4.x, self.locations.loud.bomb4.y, self.locations.loud.bomb4.z, self.texts.loud.bomb, 0.40)
                                 DrawMarker(1, self.locations.loud.bomb4.x, self.locations.loud.bomb4.y, self.locations.loud.bomb4.z - 1, 0, 0, 0, 0, 0, 0, 0.8, 0.8, 0.8, 236, 80, 80, 155, false, false, 2, false, 0, 0, 0, 0)
                                 if bomb4 <= 1.5 and IsControlJustReleased(0, 38) then
-                                    ESX.TriggerServerCallback("utk_pb:checkItem", function(cb)
+                                    QBCore.Functions.TriggerCallback("utk_pb:checkItem", function(cb)
                                         if cb then
                                             UTK.planted4 = true
                                             self.currentplant = 4
                                             TriggerServerEvent("utk_pb:removeItem", "normal_c4")
                                             self:PlantBomb()
                                         elseif not cb then
-                                            exports['mythic_notify']:SendAlert("error", "You don't have C4 charge.")
+                                            QBCore.Functions.Notify("You don't have C4 charge.", "error")
                                         end
                                     end, "normal_c4")
                                 end
@@ -397,14 +402,14 @@ function UTK:HandleInfo(...)
                                 DrawText3D(self.locations.loud.bomb5.x, self.locations.loud.bomb5.y, self.locations.loud.bomb5.z, self.texts.loud.bomb, 0.40)
                                 DrawMarker(1, self.locations.loud.bomb5.x, self.locations.loud.bomb5.y, self.locations.loud.bomb5.z - 1, 0, 0, 0, 0, 0, 0, 0.8, 0.8, 0.8, 236, 80, 80, 155, false, false, 2, false, 0, 0, 0, 0)
                                 if bomb5 <= 1.5 and IsControlJustReleased(0, 38) then
-                                    ESX.TriggerServerCallback("utk_pb:checkItem", function(cb)
+                                    QBCore.Functions.TriggerCallback("utk_pb:checkItem", function(cb)
                                         if cb then
                                             UTK.planted5 = true
                                             self.currentplant = 5
                                             TriggerServerEvent("utk_pb:removeItem", "normal_c4")
                                             self:PlantBomb()
                                         elseif not cb then
-                                            exports['mythic_notify']:SendAlert("error", "You don't have C4 charge.")
+                                            QBCore.Functions.Notify("You don't have C4 charge.", "error")
                                         end
                                     end, "normal_c4")
                                 end
@@ -417,14 +422,14 @@ function UTK:HandleInfo(...)
                                 DrawText3D(self.locations.loud.bomb6.x, self.locations.loud.bomb6.y, self.locations.loud.bomb6.z, self.texts.loud.bomb, 0.40)
                                 DrawMarker(1, self.locations.loud.bomb6.x, self.locations.loud.bomb6.y, self.locations.loud.bomb6.z - 1, 0, 0, 0, 0, 0, 0, 0.8, 0.8, 0.8, 236, 80, 80, 155, false, false, 2, false, 0, 0, 0, 0)
                                 if bomb6 <= 1.5 and IsControlJustReleased(0, 38) then
-                                    ESX.TriggerServerCallback("utk_pb:checkItem", function(cb)
+                                    QBCore.Functions.TriggerCallback("utk_pb:checkItem", function(cb)
                                         if cb then
                                             UTK.planted6 = true
                                             self.currentplant = 6
                                             TriggerServerEvent("utk_pb:removeItem", "normal_c4")
                                             self:PlantBomb()
                                         elseif not cb then
-                                            exports['mythic_notify']:SendAlert("error", "You don't have C4 charge.")
+                                            QBCore.Functions.Notify("You don't have C4 charge.", "error")
                                         end
                                     end, "normal_c4")
                                 end
@@ -449,12 +454,12 @@ function UTK:HandleInfo(...)
                                 DrawText3D(self.locations.silent.hack1.x, self.locations.silent.hack1.y, self.locations.silent.hack1.z+1, self.texts.silent.hack, 0.40)
                                 DrawMarker(1, self.locations.silent.hack1.x, self.locations.silent.hack1.y, self.locations.silent.hack1.z , 0, 0, 0, 0, 0, 0, 0.8, 0.8, 0.8, 236, 80, 80, 155, false, false, 2, false, 0, 0, 0, 0)
                                 if hack1 <= 1.5 and IsControlJustReleased(0, 38) then
-                                    ESX.TriggerServerCallback("utk_pb:checkItem", function(cb)
+                                    QBCore.Functions.TriggerCallback("utk_pb:checkItem", function(cb)
                                         if cb then
                                             self.currenthack = 1
                                             self:Hack()
                                         elseif not cb then
-                                            exports['mythic_notify']:SendAlert("error", "You don't have hacker laptop.")
+                                            QBCore.Functions.Notify("You don't have a hacker laptop.", "error")
                                         end
                                     end, "laptop_h")
                                 end
@@ -467,12 +472,12 @@ function UTK:HandleInfo(...)
                                 DrawText3D(self.locations.silent.hack2.x, self.locations.silent.hack2.y, self.locations.silent.hack2.z+1, self.texts.silent.hack, 0.40)
                                 DrawMarker(1, self.locations.silent.hack2.x, self.locations.silent.hack2.y, self.locations.silent.hack2.z , 0, 0, 0, 0, 0, 0, 0.8, 0.8, 0.8, 236, 80, 80, 155, false, false, 2, false, 0, 0, 0, 0)
                                 if hack2 <= 1.5 and  IsControlJustReleased(0, 38) then
-                                    ESX.TriggerServerCallback("utk_pb:checkItem", function(cb)
+                                    QBCore.Functions.TriggerCallback("utk_pb:checkItem", function(cb)
                                         if cb then
                                             self.currenthack = 2
                                             self:Hack()
                                         elseif not cb then
-                                            exports['mythic_notify']:SendAlert("error", "You don't have hacker laptop.")
+                                            QBCore.Functions.Notify("You don't have a hacker laptop.", "error")
                                         end
                                     end, "laptop_h")
                                 end
@@ -485,12 +490,12 @@ function UTK:HandleInfo(...)
                                 DrawText3D(self.locations.silent.hack3.x, self.locations.silent.hack3.y, self.locations.silent.hack3.z+1, self.texts.silent.hack, 0.40)
                                 DrawMarker(1, self.locations.silent.hack3.x, self.locations.silent.hack3.y, self.locations.silent.hack3.z , 0, 0, 0, 0, 0, 0, 0.8, 0.8, 0.8, 236, 80, 80, 155, false, false, 2, false, 0, 0, 0, 0)
                                 if hack3 <= 1.5 and IsControlJustReleased(0, 38) then
-                                    ESX.TriggerServerCallback("utk_pb:checkItem", function(cb)
+                                    QBCore.Functions.TriggerCallback("utk_pb:checkItem", function(cb)
                                         if cb then
                                             self.currenthack = 3
                                             self:Hack()
                                         elseif not cb then
-                                            exports['mythic_notify']:SendAlert("error", "You don't have hacker laptop.")
+                                            QBCore.Functions.Notify("You don't have a hacker laptop.", "error")
                                         end
                                     end, "laptop_h")
                                 end
@@ -503,12 +508,12 @@ function UTK:HandleInfo(...)
                                 DrawText3D(self.locations.silent.hack4.x, self.locations.silent.hack4.y, self.locations.silent.hack4.z+1, self.texts.silent.hack, 0.40)
                                 DrawMarker(1, self.locations.silent.hack4.x, self.locations.silent.hack4.y, self.locations.silent.hack4.z , 0, 0, 0, 0, 0, 0, 0.8, 0.8, 0.8, 236, 80, 80, 155, false, false, 2, false, 0, 0, 0, 0)
                                 if hack4 <= 1.5 and IsControlJustReleased(0, 38) then
-                                    ESX.TriggerServerCallback("utk_pb:checkItem", function(cb)
+                                    QBCore.Functions.TriggerCallback("utk_pb:checkItem", function(cb)
                                         if cb then
                                             self.currenthack = 4
                                             self:Hack()
                                         elseif not cb then
-                                            exports['mythic_notify']:SendAlert("error", "You don't have hacker laptop.")
+                                            QBCore.Functions.Notify("You don't have a hacker laptop.", "error")
                                         end
                                     end, "laptop_h")
                                 end
@@ -521,13 +526,13 @@ function UTK:HandleInfo(...)
                                 DrawText3D(self.locations.silent.hack5.x, self.locations.silent.hack5.y, self.locations.silent.hack5.z+1, self.texts.silent.plant, 0.40)
                                 DrawMarker(1, self.locations.silent.hack5.x, self.locations.silent.hack5.y, self.locations.silent.hack5.z , 0, 0, 0, 0, 0, 0, 0.8, 0.8, 0.8, 236, 80, 80, 155, false, false, 2, false, 0, 0, 0, 0)
                                 if hack5 <= 1.5 and IsControlJustReleased(0, 38) then
-                                    ESX.TriggerServerCallback("utk_pb:checkItem", function(cb)
+                                    QBCore.Functions.TriggerCallback("utk_pb:checkItem", function(cb)
                                         if cb then
                                             self.currenthack = "hack1"
                                             TriggerServerEvent("utk_pb:removeItem", "mini_c4")
                                             self:Hack()
                                         elseif not cb then
-                                            exports['mythic_notify']:SendAlert("error", "You don't have mini C4.")
+                                            QBCore.Functions.Notify("You don't have Mini C4.", "error")
                                         end
                                     end, "mini_c4")
                                 end
@@ -540,13 +545,13 @@ function UTK:HandleInfo(...)
                                 DrawText3D(self.locations.silent.hack6.x, self.locations.silent.hack6.y, self.locations.silent.hack6.z+1, self.texts.silent.plant, 0.40)
                                 DrawMarker(1, self.locations.silent.hack6.x, self.locations.silent.hack6.y, self.locations.silent.hack6.z , 0, 0, 0, 0, 0, 0, 0.8, 0.8, 0.8, 236, 80, 80, 155, false, false, 2, false, 0, 0, 0, 0)
                                 if hack6 <= 1.5 and IsControlJustReleased(0, 38) then
-                                    ESX.TriggerServerCallback("utk_pb:checkItem", function(cb)
+                                    QBCore.Functions.TriggerCallback("utk_pb:checkItem", function(cb)
                                         if cb then
                                             self.currenthack = "hack2"
                                             TriggerServerEvent("utk_pb:removeItem", "mini_c4")
                                             self:Hack()
                                         elseif not cb then
-                                            exports['mythic_notify']:SendAlert("error", "You don't have mini C4.")
+                                            QBCore.Functions.Notify("You don't have Mini C4.", "error")
                                         end
                                     end, "mini_c4")
                                 end
@@ -561,14 +566,14 @@ function UTK:HandleInfo(...)
             end
         elseif self.info.stage == 2 then
             if self.info.style == 1 then
-                UTK.showtime = 60
+                UTK.showtime = 30
                 self.info.stage = 3
                 self.info.locked = true
                 self:Blackout()
                 TriggerServerEvent("utk_pb:updateUTK", self)
                 return
             elseif self.info.style == 2 then
-                UTK.showtime = 60
+                UTK.showtime = 30
                 self.info.stage = 3
                 self.info.locked = true
                 self:Blackout()
@@ -576,270 +581,10 @@ function UTK:HandleInfo(...)
                 return
             end
         end
-    --[[elseif self.info.locked then -- don't enable this, it's for prisonbreak but it's not finished
-        print("3")
-        if self.info.stage == 3 then
-            print("4")
-            self:NPCSpawnPrison()
-            print("5")
-            Citizen.CreateThread(function()
-                while true do
-                    Citizen.Wait(1)
-                    local coord = GetEntityCoords(PlayerPedId())
-
-                    if not UTK.prison.planted1 then
-                        local dst = GetDistanceBetweenCoords(coord, self.locations.prison.bomb1.x, self.locations.prison.bomb1.y, self.locations.prison.bomb1.z, true)
-
-                        if dst <= 5 and not UTK.prison.planted1 then
-                            DrawText3D(self.locations.prison.bomb1.x, self.locations.prison.bomb1.y, self.locations.prison.bomb1.z, self.texts.prison.bomb, 0.40)
-                            DrawMarker(1, self.locations.prison.bomb1.x, self.locations.prison.bomb1.y, self.locations.prison.bomb1.z - 1, 0, 0, 0, 0, 0, 0, 0.8, 0.8, 0.8, 236, 80, 80, 155, false, false, 2, false, 0, 0, 0, 0)
-                            if dst <= 1.5 and IsControlJustReleased(0, 38) then
-                                ESX.TriggerServerCallback("utk_pb:checkItem", function(cb)
-                                    if cb then
-                                        UTK.prison.planted1 = true
-                                        self.currentplant = 2.1
-                                        TriggerServerEvent("utk_pb:removeItem", "normal_c4")
-                                        self:PlantBomb()
-                                    elseif not cb then
-                                        exports['mythic_notify']:SendAlert("error", "You don't have C4 charge.")
-                                    end
-                                end, "normal_c4")
-                            end
-                        end
-                    end
-                    if not UTK.prison.planted2 then
-                        local dst = GetDistanceBetweenCoords(coord, self.locations.prison.bomb2.x, self.locations.prison.bomb2.y, self.locations.prison.bomb2.z, true)
-
-                        if dst <= 5 and not UTK.prison.planted2 then
-                            DrawText3D(self.locations.prison.bomb2.x, self.locations.prison.bomb2.y, self.locations.prison.bomb2.z, self.texts.prison.bomb, 0.40)
-                            DrawMarker(1, self.locations.prison.bomb2.x, self.locations.prison.bomb2.y, self.locations.prison.bomb2.z - 1, 0, 0, 0, 0, 0, 0, 0.8, 0.8, 0.8, 236, 80, 80, 155, false, false, 2, false, 0, 0, 0, 0)
-                            if dst <= 1.5 and IsControlJustReleased(0, 38) then
-                                ESX.TriggerServerCallback("utk_pb:checkItem", function(cb)
-                                    if cb then
-                                        UTK.prison.planted2 = true
-                                        self.currentplant = 2.2
-                                        TriggerServerEvent("utk_pb:removeItem", "normal_c4")
-                                        self:PlantBomb()
-                                    elseif not cb then
-                                        exports['mythic_notify']:SendAlert("error", "You don't have C4 charge.")
-                                    end
-                                end, "normal_c4")
-                            end
-                        end
-                    end
-                    if not UTK.prison.planted3 then
-                        local dst = GetDistanceBetweenCoords(coord, self.locations.prison.bomb3.x, self.locations.prison.bomb3.y, self.locations.prison.bomb3.z, true)
-
-                        if dst <= 5 and not UTK.prison.planted3 then
-                            DrawText3D(self.locations.prison.bomb3.x, self.locations.prison.bomb3.y, self.locations.prison.bomb3.z, self.texts.prison.bomb, 0.40)
-                            DrawMarker(1, self.locations.prison.bomb3.x, self.locations.prison.bomb3.y, self.locations.prison.bomb3.z - 1, 0, 0, 0, 0, 0, 0, 0.8, 0.8, 0.8, 236, 80, 80, 155, false, false, 2, false, 0, 0, 0, 0)
-                            if dst <= 1.5 and IsControlJustReleased(0, 38) then
-                                ESX.TriggerServerCallback("utk_pb:checkItem", function(cb)
-                                    if cb then
-                                        UTK.prison.planted3 = true
-                                        self.currentplant = 2.3
-                                        TriggerServerEvent("utk_pb:removeItem", "normal_c4")
-                                        self:PlantBomb()
-                                    elseif not cb then
-                                        exports['mythic_notify']:SendAlert("error", "You don't have C4 charge.")
-                                    end
-                                end, "normal_c4")
-                            end
-                        end
-                    end
-                    if not UTK.prison.planted4 then
-                        local dst = GetDistanceBetweenCoords(coord, self.locations.prison.bomb4.x, self.locations.prison.bomb4.y, self.locations.prison.bomb4.z, true)
-
-                        if dst <= 5 and not UTK.prison.planted4 then
-                            DrawText3D(self.locations.prison.bomb4.x, self.locations.prison.bomb4.y, self.locations.prison.bomb4.z, self.texts.prison.bomb, 0.40)
-                            DrawMarker(1, self.locations.prison.bomb4.x, self.locations.prison.bomb4.y, self.locations.prison.bomb4.z - 1, 0, 0, 0, 0, 0, 0, 0.8, 0.8, 0.8, 236, 80, 80, 155, false, false, 2, false, 0, 0, 0, 0)
-                            if dst <= 1.5 and IsControlJustReleased(0, 38) then
-                                ESX.TriggerServerCallback("utk_pb:checkItem", function(cb)
-                                    if cb then
-                                        UTK.prison.planted4 = true
-                                        self.currentplant = 2.4
-                                        TriggerServerEvent("utk_pb:removeItem", "normal_c4")
-                                        self:PlantBomb()
-                                    elseif not cb then
-                                        exports['mythic_notify']:SendAlert("error", "You don't have C4 charge.")
-                                    end
-                                end, "normal_c4")
-                            end
-                        end
-                    end
-                    if not UTK.prison.planted5 then
-                        local dst = GetDistanceBetweenCoords(coord, self.locations.prison.bomb5.x, self.locations.prison.bomb5.y, self.locations.prison.bomb5.z, true)
-
-                        if dst <= 5 and not UTK.prison.planted5 then
-                            DrawText3D(self.locations.prison.bomb5.x, self.locations.prison.bomb5.y, self.locations.prison.bomb5.z, self.texts.prison.bomb, 0.40)
-                            DrawMarker(1, self.locations.prison.bomb5.x, self.locations.prison.bomb5.y, self.locations.prison.bomb5.z - 1, 0, 0, 0, 0, 0, 0, 0.8, 0.8, 0.8, 236, 80, 80, 155, false, false, 2, false, 0, 0, 0, 0)
-                            if dst <= 1.5 and IsControlJustReleased(0, 38) then
-                                ESX.TriggerServerCallback("utk_pb:checkItem", function(cb)
-                                    if cb then
-                                        UTK.prison.planted5 = true
-                                        self.currentplant = 2.5
-                                        TriggerServerEvent("utk_pb:removeItem", "normal_c4")
-                                        self:PlantBomb()
-                                    elseif not cb then
-                                        exports['mythic_notify']:SendAlert("error", "You don't have C4 charge.")
-                                    end
-                                end, "normal_c4")
-                            end
-                        end
-                    end
-                    if not UTK.prison.planted6 then
-                        local dst = GetDistanceBetweenCoords(coord, self.locations.prison.bomb6.x, self.locations.prison.bomb6.y, self.locations.prison.bomb6.z, true)
-
-                        if dst <= 5 and not UTK.prison.planted6 then
-                            DrawText3D(self.locations.prison.bomb6.x, self.locations.prison.bomb6.y, self.locations.prison.bomb6.z, self.texts.prison.bomb, 0.40)
-                            DrawMarker(1, self.locations.prison.bomb6.x, self.locations.prison.bomb6.y, self.locations.prison.bomb6.z - 1, 0, 0, 0, 0, 0, 0, 0.8, 0.8, 0.8, 236, 80, 80, 155, false, false, 2, false, 0, 0, 0, 0)
-                            if dst <= 1.5 and IsControlJustReleased(0, 38) then
-                                ESX.TriggerServerCallback("utk_pb:checkItem", function(cb)
-                                    if cb then
-                                        UTK.prison.planted6 = true
-                                        self.currentplant = 2.6
-                                        TriggerServerEvent("utk_pb:removeItem", "normal_c4")
-                                        self:PlantBomb()
-                                    elseif not cb then
-                                        exports['mythic_notify']:SendAlert("error", "You don't have C4 charge.")
-                                    end
-                                end, "normal_c4")
-                            end
-                        end
-                    end
-                    if not UTK.prison.planted7 then
-                        local dst = GetDistanceBetweenCoords(coord, self.locations.prison.bomb7.x, self.locations.prison.bomb7.y, self.locations.prison.bomb7.z, true)
-
-                        if dst <= 5 and not UTK.prison.planted7 then
-                            DrawText3D(self.locations.prison.bomb7.x, self.locations.prison.bomb7.y, self.locations.prison.bomb7.z, self.texts.prison.bomb, 0.40)
-                            DrawMarker(1, self.locations.prison.bomb7.x, self.locations.prison.bomb7.y, self.locations.prison.bomb7.z - 1, 0, 0, 0, 0, 0, 0, 0.8, 0.8, 0.8, 236, 80, 80, 155, false, false, 2, false, 0, 0, 0, 0)
-                            if dst <= 1.5 and IsControlJustReleased(0, 38) then
-                                ESX.TriggerServerCallback("utk_pb:checkItem", function(cb)
-                                    if cb then
-                                        UTK.prison.planted7 = true
-                                        self.currentplant = 2.7
-                                        TriggerServerEvent("utk_pb:removeItem", "normal_c4")
-                                        self:PlantBomb()
-                                    elseif not cb then
-                                        exports['mythic_notify']:SendAlert("error", "You don't have C4 charge.")
-                                    end
-                                end, "normal_c4")
-                            end
-                        end
-                    end
-                    if not UTK.prison.planted8 then
-                        local dst = GetDistanceBetweenCoords(coord, self.locations.prison.bomb8.x, self.locations.prison.bomb8.y, self.locations.prison.bomb8.z, true)
-
-                        if dst <= 5 and not UTK.prison.planted8 then
-                            DrawText3D(self.locations.prison.bomb8.x, self.locations.prison.bomb8.y, self.locations.prison.bomb8.z, self.texts.prison.bomb, 0.40)
-                            DrawMarker(1, self.locations.prison.bomb8.x, self.locations.prison.bomb8.y, self.locations.prison.bomb8.z - 1, 0, 0, 0, 0, 0, 0, 0.8, 0.8, 0.8, 236, 80, 80, 155, false, false, 2, false, 0, 0, 0, 0)
-                            if dst <= 1.5 and IsControlJustReleased(0, 38) then
-                                ESX.TriggerServerCallback("utk_pb:checkItem", function(cb)
-                                    if cb then
-                                        UTK.prison.planted8 = true
-                                        self.currentplant = 2.8
-                                        TriggerServerEvent("utk_pb:removeItem", "normal_c4")
-                                        self:PlantBomb()
-                                    elseif not cb then
-                                        exports['mythic_notify']:SendAlert("error", "You don't have C4 charge.")
-                                    end
-                                end, "normal_c4")
-                            end
-                        end
-                    end
-                    if not UTK.prison.planted9 then
-                        local dst = GetDistanceBetweenCoords(coord, self.locations.prison.bomb9.x, self.locations.prison.bomb9.y, self.locations.prison.bomb9.z, true)
-
-                        if dst <= 5 and not UTK.prison.planted9 then
-                            DrawText3D(self.locations.prison.bomb9.x, self.locations.prison.bomb9.y, self.locations.prison.bomb9.z, self.texts.prison.bomb, 0.40)
-                            DrawMarker(1, self.locations.prison.bomb9.x, self.locations.prison.bomb9.y, self.locations.prison.bomb9.z - 1, 0, 0, 0, 0, 0, 0, 0.8, 0.8, 0.8, 236, 80, 80, 155, false, false, 2, false, 0, 0, 0, 0)
-                            if dst <= 1.5 and IsControlJustReleased(0, 38) then
-                                ESX.TriggerServerCallback("utk_pb:checkItem", function(cb)
-                                    if cb then
-                                        UTK.prison.planted9 = true
-                                        self.currentplant = 2.9
-                                        TriggerServerEvent("utk_pb:removeItem", "normal_c4")
-                                        self:PlantBomb()
-                                    elseif not cb then
-                                        exports['mythic_notify']:SendAlert("error", "You don't have C4 charge.")
-                                    end
-                                end, "normal_c4")
-                            end
-                        end
-                    end
-                    if not UTK.prison.planted10 then
-                        local dst = GetDistanceBetweenCoords(coord, self.locations.prison.bomb10.x, self.locations.prison.bomb10.y, self.locations.prison.bomb10.z, true)
-
-                        if dst <= 5 and not UTK.prison.planted10 then
-                            DrawText3D(self.locations.prison.bomb10.x, self.locations.prison.bomb10.y, self.locations.prison.bomb10.z, self.texts.prison.bomb, 0.40)
-                            DrawMarker(1, self.locations.prison.bomb10.x, self.locations.prison.bomb10.y, self.locations.prison.bomb10.z - 1, 0, 0, 0, 0, 0, 0, 0.8, 0.8, 0.8, 236, 80, 80, 155, false, false, 2, false, 0, 0, 0, 0)
-                            if dst <= 1.5 and IsControlJustReleased(0, 38) then
-                                ESX.TriggerServerCallback("utk_pb:checkItem", function(cb)
-                                    if cb then
-                                        UTK.prison.planted10 = true
-                                        self.currentplant = 2.10
-                                        TriggerServerEvent("utk_pb:removeItem", "normal_c4")
-                                        self:PlantBomb()
-                                    elseif not cb then
-                                        exports['mythic_notify']:SendAlert("error", "You don't have C4 charge.")
-                                    end
-                                end, "normal_c4")
-                            end
-                        end
-                    end
-                    if not UTK.prison.planted11 then
-                        local dst = GetDistanceBetweenCoords(coord, self.locations.prison.bomb11.x, self.locations.prison.bomb11.y, self.locations.prison.bomb11.z, true)
-
-                        if dst <= 5 and not UTK.prison.planted11 then
-                            DrawText3D(self.locations.prison.bomb11.x, self.locations.prison.bomb11.y, self.locations.prison.bomb11.z, self.texts.prison.bomb, 0.40)
-                            DrawMarker(1, self.locations.prison.bomb11.x, self.locations.prison.bomb11.y, self.locations.prison.bomb11.z - 1, 0, 0, 0, 0, 0, 0, 0.8, 0.8, 0.8, 236, 80, 80, 155, false, false, 2, false, 0, 0, 0, 0)
-                            if dst <= 1.5 and IsControlJustReleased(0, 38) then
-                                ESX.TriggerServerCallback("utk_pb:checkItem", function(cb)
-                                    if cb then
-                                        UTK.prison.planted11 = true
-                                        self.currentplant = 2.11
-                                        TriggerServerEvent("utk_pb:removeItem", "normal_c4")
-                                        self:PlantBomb()
-                                    elseif not cb then
-                                        exports['mythic_notify']:SendAlert("error", "You don't have C4 charge.")
-                                    end
-                                end, "normal_c4")
-                            end
-                        end
-                    end
-                    if not UTK.prison.planted12 then
-                        local dst = GetDistanceBetweenCoords(coord, self.locations.prison.bomb12.x, self.locations.prison.bomb12.y, self.locations.prison.bomb12.z, true)
-
-                        if dst <= 5 and not UTK.prison.planted12 then
-                            DrawText3D(self.locations.prison.bomb12.x, self.locations.prison.bomb12.y, self.locations.prison.bomb12.z, self.texts.prison.bomb, 0.40)
-                            DrawMarker(1, self.locations.prison.bomb12.x, self.locations.prison.bomb12.y, self.locations.prison.bomb12.z - 1, 0, 0, 0, 0, 0, 0, 0.8, 0.8, 0.8, 236, 80, 80, 155, false, false, 2, false, 0, 0, 0, 0)
-                            if dst <= 1.5 and IsControlJustReleased(0, 38) then
-                                ESX.TriggerServerCallback("utk_pb:checkItem", function(cb)
-                                    if cb then
-                                        UTK.prison.planted12 = true
-                                        self.currentplant = 2.12
-                                        TriggerServerEvent("utk_pb:removeItem", "normal_c4")
-                                        self:PlantBomb()
-                                    elseif not cb then
-                                        exports['mythic_notify']:SendAlert("error", "You don't have C4 charge.")
-                                    end
-                                end, "normal_c4")
-                            end
-                        end
-                    end
-                    if UTK.prison.planted1 and UTK.prison.planted2 and UTK.prison.planted3 and UTK.prison.planted4 and UTK.prison.planted5 and UTK.prison.planted6 and UTK.prison.planted7 and UTK.prison.planted8 and UTK.prison.planted9 and UTK.prison.planted10 and UTK.prison.planted11 and UTK.prison.planted12 then
-                        self.info.stage = 0
-                        self.info.style = nil
-                        self.info.locked = true
-                        return TriggerServerEvent("utk_pb:updateUTK", self)
-                    end
-                end
-            end)
-        end]]
     end
 end
 function HandlePlayers()
-    if PlayerData.job.name == "police" then
+    if PlayerData.job == 'police' then
         SetPedRelationshipGroupHash(PlayerPedId(), UTK.police)
     else
         SetPedRelationshipGroupHash(PlayerPedId(), UTK.others)
@@ -956,7 +701,8 @@ function UTK:PlantBomb(...)
     NetworkAddEntityToSynchronisedScene(bag, bagscene, "anim@heists@ornate_bank@thermal_charge", "bag_thermal_charge", 4.0, -8.0, 1)
     SetPedComponentVariation(ped, 5, 0, 0, 0)
     NetworkStartSynchronisedScene(bagscene)
-    exports['progressBars']:startUI(4500, "Planting")
+	QBCore.Functions.Progressbar('plantingc4', 'Planting C4', 4500, false, false, true)
+    --exports['progressBars']:startUI(4500, "Planting")
     Citizen.Wait(1500)
     local x, y, z = table.unpack(GetEntityCoords(ped))
     local bomba = CreateObject(GetHashKey("prop_bomb_01"), x, y, z + 0.2,  true,  true, true)
@@ -968,7 +714,7 @@ function UTK:PlantBomb(...)
     DetachEntity(bomba, 1, 1)
     FreezeEntityPosition(bomba, true)
     NetworkStopSynchronisedScene(bagscene)
-    exports['mythic_notify']:SendAlert("success", "C4 Planted")
+    QBCore.Functions.Notify("C4 planted!", "success")
     if self.currentplant == "hack1" then
         SmallExp(1)
     elseif self.currentplant == "hack2" then
@@ -1219,7 +965,7 @@ function UTK:Blackout(...)
         SetFocusEntity(PlayerPedId())
     end
     TriggerServerEvent("utk_pb:blackout", true)
-    exports['mythic_notify']:SendAlert("success", "BLACKOUT!")
+    QBCore.Functions.Notify("Blackout!", "success")
 end
 function SmallExp(method, coords)
     UTK.mintime = 5
@@ -1283,8 +1029,9 @@ AddEventHandler("utk_pb:handlePlayers_c", function()
 end)
 AddEventHandler("utk_pb:power", function(status)
     SetArtificialLightsState(status)
+	SetBlackout(status)
     if not status then
-        exports['mythic_notify']:SendAlert("success", "Power is back on!")
+        QBCore.Functions.Notify("Power is back on!", "success")
     elseif status then
         UTK.info.locked = true
     end
@@ -1532,9 +1279,9 @@ Citizen.CreateThread(function()
                     DisableControlAction(0, 25, false)
                     FreezeEntityPosition(PlayerPedId(), false)
                     if Method == 1 then
-                        exports['mythic_notify']:SendAlert("success", _U("hacked"))
+                        QBCore.Functions.Notify("You hacked the system.", "success")
                     elseif Method == 2 then
-                        exports['mythic_notify']:SendAlert("success", _U("hacked"))
+                        QBCore.Functions.Notify("You hacked the system.", "success")
                     end
                     UTK.hacksuccess = true
                     UsingComputer = false
