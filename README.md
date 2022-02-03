@@ -1,4 +1,6 @@
-# utk_powerplant
+# utk_pb
+
+Edited to work with QBCore Framework
 
 Installation:
 
